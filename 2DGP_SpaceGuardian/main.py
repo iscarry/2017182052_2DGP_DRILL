@@ -14,6 +14,14 @@ Battle_ship_dx = 0
 Battle_ship_dy = 0
 
 
+
+Fire_image = load_image('Fire.png')
+Fire_x = 0
+Fire_y = 0
+Fire_speed = 10
+
+
+
 Done = False  #게임의 진행상태 체크
 
 #게임 반복 구간
@@ -35,6 +43,8 @@ while not Done:
                 Battle_ship_dy = 3
             elif event.key == SDLK_DOWN:
                 Battle_ship_dy = -3
+            elif event.key == SDLK_SPACE:
+                Fire_image.draw(Battle_ship_x, Battle_ship_y)
 
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LEFT or event.key == SDLK_RIGHT:
@@ -45,6 +55,7 @@ while not Done:
 
     Battle_ship_x += Battle_ship_dx
     Battle_ship_y += Battle_ship_dy
+
 
     #배경화면
 
