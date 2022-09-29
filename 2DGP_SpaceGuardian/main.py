@@ -1,11 +1,44 @@
 from pico2d import*
-
+import pygame
+import os
+import sys
+import random
 
 # 정의
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 
 open_canvas(SCREEN_WIDTH, SCREEN_HEIGHT) # 스크린 정의
+
+class BattleShip(pygame.sprite.Sprite):
+    def __init__(self):
+        super(BattleShip, self).__init__()
+        self.image = load_image('Battleship.png')
+        self.rect = self.image.get_rect()
+        self.reset()
+
+    def reset(self):
+        self.rect.x = int(SCREEN_WIDTH /2)
+        self.rect.y = int(SCREEN_HEIGHT/10)
+        self.dx = 0
+        self.dy = 0
+    def update(self):
+        self.rect.x += self.dx
+        self.rect.y += self.dy
+
+        if self.rect.x < 0 or self.x + self.rect.width > SCREEN_WIDTH:
+            self.rect.x -= self.dx
+
+        if self.rect.y < 0 or self.rect.y + self.rect.height > SCREEN_HEIGHT:
+            self.rect.y -= self.dy
+
+    def draw(self):
+        self.image.draw('Battleship.png')
+
+    def colide(self):
+        pass
+
+
 
 Battle_ship_image = load_image('Battleship.png')
 Battle_ship_x = SCREEN_WIDTH / 2
@@ -18,7 +51,8 @@ Battle_ship_dy = 0
 Fire_image = load_image('Fire.png')
 Fire_x = 0
 Fire_y = 0
-Fire_speed = 10
+Fire_speed = 0
+
 
 
 
@@ -44,7 +78,8 @@ while not Done:
             elif event.key == SDLK_DOWN:
                 Battle_ship_dy = -3
             elif event.key == SDLK_SPACE:
-                Fire_image.draw(Battle_ship_x, Battle_ship_y)
+                Fire_speed = 10
+
 
         elif event.type == SDL_KEYUP:
             if event.key == SDLK_LEFT or event.key == SDLK_RIGHT:
@@ -55,12 +90,13 @@ while not Done:
 
     Battle_ship_x += Battle_ship_dx
     Battle_ship_y += Battle_ship_dy
-
+    Fire_y += Fire_speed
 
     #배경화면
 
     #회면 그리기
     Battle_ship_image.draw_now(Battle_ship_x, Battle_ship_y)
+    Fire_image.draw(Fire_x, Fire_y)
 
     # 회면 업데이트
     update_canvas()
