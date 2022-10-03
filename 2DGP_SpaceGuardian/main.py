@@ -1,19 +1,23 @@
-from pico2d import*
 import pygame
 import os
 import sys
 import random
-
+from time import sleep
 # 정의
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 
-open_canvas(SCREEN_WIDTH, SCREEN_HEIGHT) # 스크린 정의
+BLACK = (0, 0, 0)
+WHITE = (200, 200, 200)
+YELLOW = (250, 250, 50)
+RED = (250, 50, 50)
+
+FPS = 60
 
 class BattleShip(pygame.sprite.Sprite):
     def __init__(self):
         super(BattleShip, self).__init__()
-        self.image = load_image('Battleship.png')
+        self.image = pygame.image.load('Battleship.png')
         self.rect = self.image.get_rect()
         self.reset()
 
@@ -26,88 +30,101 @@ class BattleShip(pygame.sprite.Sprite):
         self.rect.x += self.dx
         self.rect.y += self.dy
 
-        if self.rect.x < 0 or self.x + self.rect.width > SCREEN_WIDTH:
+        if self.rect.x < 0 or self.rect.x + self.rect.width > SCREEN_WIDTH:
             self.rect.x -= self.dx
 
         if self.rect.y < 0 or self.rect.y + self.rect.height > SCREEN_HEIGHT:
             self.rect.y -= self.dy
 
-    def draw(self):
-        self.image.draw('Battleship.png')
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 
     def colide(self):
         pass
 
 
 
-Battle_ship_image = load_image('Battleship.png')
-Battle_ship_x = SCREEN_WIDTH / 2
-Battle_ship_y = SCREEN_HEIGHT / 10
-Battle_ship_dx = 0
-Battle_ship_dy = 0
+class Fire(pygame.sprite.Sprite):
+    def __init__(self, xpos, ypos, speed):
+        super(Fire, self).__init__()
+        self.image = pygame.image.load('Fire.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = xpos
+        self.rect.y = ypos
+        self.speed = speed
+
+    def update(self):
+        self.rect.y -= self.speed
+
+    def colide(self):
+        pass
 
 
+class Game():
+    def __init__(self):
+        self.background_image = pygame.image.load('background.png')
+        self.battleship = BattleShip()
+        self.fire = pygame.sprite.Group()
 
-Fire_image = load_image('Fire.png')
-Fire_x = 0
-Fire_y = 0
-Fire_speed = 0
+    def process_events(self):
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return True
 
-
-
-Done = False  #게임의 진행상태 체크
-
-#게임 반복 구간
-while not Done:
-    clear_canvas()
-
-    #이벤트 반복구간
-    for event in get_events():
-
-        if event.type == SDL_QUIT: # 윈도우 종료시 반복 중지
-            Done = True
-
-        elif event.type == SDL_KEYDOWN:
-            if event.key == SDLK_LEFT:
-                Battle_ship_dx = -3
-            elif event.key == SDLK_RIGHT:
-                Battle_ship_dx = 3
-            elif event.key == SDLK_UP:
-                Battle_ship_dy = 3
-            elif event.key == SDLK_DOWN:
-                Battle_ship_dy = -3
-            elif event.key == SDLK_SPACE:
-                Fire_speed = 10
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.battleship.dx -= 5
+                elif event.key == pygame.K_RIGHT:
+                    self.battleship.dx += 5
+                elif event.key == pygame.K_UP:
+                    self.battleship.dy -= 5
+                elif event.key == pygame.K_DOWN:
+                    self.battleship.dy += 5
+                elif event.key == pygame.K_SPACE:
+                    fire = Fire(self.battleship.rect.centerx, self.battleship.rect.y, 10)
+                    self.fire.add(fire)
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                    self.battleship.dx = 0
+                elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    self.battleship.dy = 0
 
 
-        elif event.type == SDL_KEYUP:
-            if event.key == SDLK_LEFT or event.key == SDLK_RIGHT:
-                Battle_ship_dx = 0
-            elif event.key == SDLK_UP or event.key == SDLK_DOWN:
-                Battle_ship_dy = 0
-    # 게임 로직
+        return False
 
-    Battle_ship_x += Battle_ship_dx
-    Battle_ship_y += Battle_ship_dy
-    Fire_y += Fire_speed
 
-    #배경화면
+    def display_frame(self, screen):
 
-    #회면 그리기
-    Battle_ship_image.draw_now(Battle_ship_x, Battle_ship_y)
-    Fire_image.draw(Fire_x, Fire_y)
+        screen.blit(self.background_image, self.background_image.get_rect())
+        self.fire.update()
+        self.fire.draw(screen)
+        self.battleship.update()
+        self.battleship.draw(screen)
 
-    # 회면 업데이트
-    update_canvas()
 
-    # 초당 60프레임 고정
+def main():
+    pygame.init()
+    pygame.display.set_caption('Space_Guardian')
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
+    game = Game()
 
-    #delay(0.01)
+    done = False
 
-# 게임 종료
-close_canvas()
+    while not done:
 
+        done = game.process_events()
+
+        game.display_frame(screen)
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    pygame.quit()
+
+
+if __name__ == '__main__':
+    main()
 
 
 
