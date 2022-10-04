@@ -58,18 +58,37 @@ class Fire(pygame.sprite.Sprite):
     def update(self):
         self.rect.y -= self.speed
 
-    def colide(self):
-        pass
+    def colide(self, sprites):
+        for sprite in sprites:
+            if pygame.sprite.collide_rect(self, sprite):
+                return sprite
 
 
 class Rock(pygame.sprite.Sprite):
     def __init__(self, xpos, ypos, speed):
         super(Rock, self).__init__()
-        self.image = pygame.image.load('Rock01.png')
+        self.rock01 = pygame.image.load('Rock01.png')
+        self.G_rock = pygame.image.load('G_Rock.png')
+        self.U_Rock = pygame.image.load('unique_rock.png')
+
+        self.image = random.randint(1, 3)
+        if self.image == 1:
+            self.image = self.rock01
+        elif self.image == 2:
+            self.image = self.U_Rock
+        else:
+            if random.randint(1, 10) == 1:
+                self.image = self.G_rock
+            else:
+                self.image = self.rock01
+
         self.rect = self.image.get_rect()
         self.rect.x = xpos
         self.rect.y = ypos
         self.speed = speed
+
+
+
     def update(self):
         self.rect.y += self.speed
 
@@ -77,7 +96,7 @@ class Game():
     def __init__(self):
         self.background_image = pygame.image.load('background.png')
         self.battleship = BattleShip()
-        self.fire = pygame.sprite.Group()
+        self.fires = pygame.sprite.Group()
         self.rocks = pygame.sprite.Group()
     def process_events(self):
         for event in pygame.event.get():
@@ -95,7 +114,7 @@ class Game():
                     self.battleship.dy += 5
                 elif event.key == pygame.K_SPACE:
                     fire = Fire(self.battleship.rect.centerx, self.battleship.rect.y, 10)
-                    self.fire.add(fire)
+                    self.fires.add(fire)
                 elif event.key == pygame.K_ESCAPE:
                     return True
 
@@ -113,11 +132,19 @@ class Game():
         Rock_Speed = 1
         Max_Speed = 2
 
-        if random.randint(1, 10) == 1:
+        if random.randint(1, 60) == 1:
             for i in range(Ocur_Rock):
                 speed = random.randint(Rock_Speed, Max_Speed)
-                rock = Rock(random.randint(0, SCREEN_WIDTH - 30), 0, speed)
+                rock = Rock(random.randint(30, SCREEN_WIDTH - 30), 0, speed)
                 self.rocks.add(rock)
+
+        for fire in self.fires:
+            rock = fire.colide(self.rocks)
+            if rock:
+                fire.kill()
+                rock.kill()
+
+
 
 
     def display_frame(self, screen):
@@ -126,8 +153,8 @@ class Game():
 
         self.rocks.update()
         self.rocks.draw(screen)
-        self.fire.update()
-        self.fire.draw(screen)
+        self.fires.update()
+        self.fires.draw(screen)
         self.battleship.update()
         self.battleship.draw(screen)
 
