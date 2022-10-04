@@ -3,6 +3,7 @@ import os
 import sys
 import random
 from time import sleep
+
 # 정의
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
@@ -14,6 +15,7 @@ RED = (250, 50, 50)
 
 FPS = 60
 
+#클레스
 class BattleShip(pygame.sprite.Sprite):
     def __init__(self):
         super(BattleShip, self).__init__()
@@ -22,8 +24,8 @@ class BattleShip(pygame.sprite.Sprite):
         self.reset()
 
     def reset(self):
-        self.rect.x = int(SCREEN_WIDTH /2)
-        self.rect.y = int(SCREEN_HEIGHT/10)
+        self.rect.x = (SCREEN_WIDTH * 0.4)
+        self.rect.y = (SCREEN_HEIGHT * 0.8)
         self.dx = 0
         self.dy = 0
     def update(self):
@@ -60,14 +62,24 @@ class Fire(pygame.sprite.Sprite):
         pass
 
 
+class Rock(pygame.sprite.Sprite):
+    def __init__(self, xpos, ypos, speed):
+        super(Rock, self).__init__()
+        self.image = pygame.image.load('Rock01.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = xpos
+        self.rect.y = ypos
+        self.speed = speed
+    def update(self):
+        self.rect.y += self.speed
+
 class Game():
     def __init__(self):
         self.background_image = pygame.image.load('background.png')
         self.battleship = BattleShip()
         self.fire = pygame.sprite.Group()
-
+        self.rocks = pygame.sprite.Group()
     def process_events(self):
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return True
@@ -84,6 +96,9 @@ class Game():
                 elif event.key == pygame.K_SPACE:
                     fire = Fire(self.battleship.rect.centerx, self.battleship.rect.y, 10)
                     self.fire.add(fire)
+                elif event.key == pygame.K_ESCAPE:
+                    return True
+
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                     self.battleship.dx = 0
@@ -93,10 +108,24 @@ class Game():
 
         return False
 
+    def game_logic(self, screen):
+        Ocur_Rock = 1
+        Rock_Speed = 1
+        Max_Speed = 2
+
+        if random.randint(1, 10) == 1:
+            for i in range(Ocur_Rock):
+                speed = random.randint(Rock_Speed, Max_Speed)
+                rock = Rock(random.randint(0, SCREEN_WIDTH - 30), 0, speed)
+                self.rocks.add(rock)
+
 
     def display_frame(self, screen):
 
         screen.blit(self.background_image, self.background_image.get_rect())
+
+        self.rocks.update()
+        self.rocks.draw(screen)
         self.fire.update()
         self.fire.draw(screen)
         self.battleship.update()
@@ -116,6 +145,8 @@ def main():
 
         done = game.process_events()
 
+
+        game.game_logic(screen)
         game.display_frame(screen)
         pygame.display.flip()
         clock.tick(FPS)
