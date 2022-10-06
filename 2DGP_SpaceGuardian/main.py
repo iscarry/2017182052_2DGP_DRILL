@@ -104,7 +104,7 @@ class Game():
 
         self.count_miss = 0
         self.destroied_rock = 0
-        self.default_font = pygame.font.Font('dist', 28)
+        self.default_font = pygame.font.Font(None, 28)
     def process_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -157,12 +157,19 @@ class Game():
                 rock.kill()
                 self.count_miss += 1
 
-
+    def draw_text(self, screen, text, font, x, y, color):
+        text_obj = font.render(text, True, color)
+        text_rect = text_obj.get_rect()
+        text_rect.center = x, y
+        screen.blit(text_obj, text_rect)
 
     def display_frame(self, screen):
 
         screen.blit(self.background_image, self.background_image.get_rect())
-        self.draw_text(screen, 'Destroyed Meteorite:{}'.format(self.destroied_rock), self.default_font, 100, 20, YELLOW)
+        self.draw_text(screen, 'Destroyed Meteorite: {}'.format(self.destroied_rock),
+                       self.default_font, 110, 20, YELLOW)
+        self.draw_text(screen, 'Missed Meteorite: {}'.format(self.count_miss),
+                       self.default_font, 340, 20, RED)
         self.rocks.update()
         self.rocks.draw(screen)
         self.fires.update()
@@ -170,11 +177,7 @@ class Game():
         self.battleship.update()
         self.battleship.draw(screen)
 
-    def draw_text(self, screen, text, front, x, y, color):
-        text_obj = pygame.font.render(text, True, color)
-        text_rect = text_obj.get_rect()
-        text_rect.center = x, y
-        screen.blit(text_obj, text_rect)
+
 
 
 def main():
