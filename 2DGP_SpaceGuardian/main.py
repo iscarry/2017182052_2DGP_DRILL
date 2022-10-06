@@ -92,12 +92,19 @@ class Rock(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speed
 
+    def Count_miss_rock(self):
+        if self.rect.y > SCREEN_HEIGHT:
+            return True
 class Game():
     def __init__(self):
         self.background_image = pygame.image.load('background.png')
         self.battleship = BattleShip()
         self.fires = pygame.sprite.Group()
         self.rocks = pygame.sprite.Group()
+
+        self.count_miss = 0
+        self.destroied_rock = 0
+        self.default_font = pygame.font.Font('dist', 28)
     def process_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -141,22 +148,33 @@ class Game():
         for fire in self.fires:
             rock = fire.colide(self.rocks)
             if rock:
+                self.destroied_rock += 1
                 fire.kill()
                 rock.kill()
 
+        for rock in self.rocks:
+            if rock.Count_miss_rock():
+                rock.kill()
+                self.count_miss += 1
 
 
 
     def display_frame(self, screen):
 
         screen.blit(self.background_image, self.background_image.get_rect())
-
+        self.draw_text(screen, 'Destroyed Meteorite:{}'.format(self.destroied_rock), self.default_font, 100, 20, YELLOW)
         self.rocks.update()
         self.rocks.draw(screen)
         self.fires.update()
         self.fires.draw(screen)
         self.battleship.update()
         self.battleship.draw(screen)
+
+    def draw_text(self, screen, text, front, x, y, color):
+        text_obj = pygame.font.render(text, True, color)
+        text_rect = text_obj.get_rect()
+        text_rect.center = x, y
+        screen.blit(text_obj, text_rect)
 
 
 def main():
