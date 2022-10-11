@@ -3,7 +3,8 @@ import os
 import sys
 import random
 from time import sleep
-
+import game_framework
+import title_state
 
 # 정의
 SCREEN_WIDTH = 480
@@ -13,8 +14,16 @@ BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 YELLOW = (250, 250, 50)
 RED = (250, 50, 50)
-
 FPS = 60
+battleship = None
+fires = None
+rocks = None
+Ocur_Rock = 1
+Rock_Speed = 1
+Max_Speed = 2
+destroied_rock = 0
+count_miss = 0
+
 
 #클레스
 
@@ -181,139 +190,114 @@ class Rock(pygame.sprite.Sprite):
     def Count_miss_rock(self):
         if self.rect.y > SCREEN_HEIGHT:
             return True
-class Game():
-    def __init__(self):
-        self.background_image = pygame.image.load('background.png')
-        self.menu_image = pygame.image.load('menu_BG.png')
-        self.battleship = BattleShip()
-        self.fires = pygame.sprite.Group()
-        self.rocks = pygame.sprite.Group()
-
-        self.count_miss = 0
-        self.destroied_rock = 0
-        self.default_font = pygame.font.Font(None, 28)
-        self.menu_on = True
-
-    def process_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return True
-            if self.menu_on:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.menu_on = False
-            else:
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.battleship.direction = "left"
-                        self.battleship.state = 2
-                    elif event.key == pygame.K_RIGHT:
-                        self.battleship.direction = "right"
-                        self.battleship.state = 1
-                    elif event.key == pygame.K_UP:
-                        self.battleship.direction = "up"
-                        self.battleship.state = 3
-                    elif event.key == pygame.K_DOWN:
-                        self.battleship.direction = "down"
-                        self.battleship.state = 4
-                    elif event.key == pygame.K_SPACE:
-                        fire = Fire(self.battleship.rect.centerx, self.battleship.rect.y, 10)
-                        self.fires.add(fire)
-                    elif event.key == pygame.K_ESCAPE:
-                        return True
-
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                        self.battleship.direction = "stay"
-                        self.battleship.state = 0
-                    elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                        self.battleship.direction = "stay"
-                        self.battleship.state = 0
 
 
-        return False
-
-    def game_logic(self, screen):
-        Ocur_Rock = 1
-        Rock_Speed = 1
-        Max_Speed = 2
-
-        if random.randint(1, 60) == 1:
-            for i in range(Ocur_Rock):
-                speed = random.randint(Rock_Speed, Max_Speed)
-                rock = Rock(random.randint(30, SCREEN_WIDTH - 30), 0, speed)
-                self.rocks.add(rock)
-
-        for fire in self.fires:
-            rock = fire.colide(self.rocks)
-            if rock:
-                self.destroied_rock += 1
-                fire.kill()
-                rock.kill()
-
-        for rock in self.rocks:
-            if rock.Count_miss_rock():
-                rock.kill()
-                self.count_miss += 1
-
-    def draw_text(self, screen, text, font, x, y, color):
-        text_obj = font.render(text, True, color)
-        text_rect = text_obj.get_rect()
-        text_rect.center = x, y
-        screen.blit(text_obj, text_rect)
-
-    def display_menu(self, screen):
-        screen.blit(self.menu_image, [0, 0])
-        draw_x = int(SCREEN_WIDTH / 2)
-        draw_y = int(SCREEN_HEIGHT / 4)
-        self.draw_text(screen, 'Save The Earth', self.default_font, draw_x, draw_y, YELLOW)
-        self.draw_text(screen, 'Press Space Button', self.default_font, draw_x, draw_y + 200, WHITE)
-        self.draw_text(screen, 'Start Game', self.default_font, draw_x, draw_y + 250, WHITE)
-
-    def display_frame(self, screen):
-
-        screen.blit(self.background_image, self.background_image.get_rect())
-        self.draw_text(screen, 'Destroyed Meteorite: {}'.format(self.destroied_rock),
-                       self.default_font, 110, 20, YELLOW)
-        self.draw_text(screen, 'Missed Meteorite: {}'.format(self.count_miss),
-                       self.default_font, 340, 20, RED)
-        self.rocks.update()
-        self.rocks.draw(screen)
-        self.fires.update()
-        self.fires.draw(screen)
-        self.battleship.update()
-        self.battleship.draw(screen)
+def game_logic():
+    global Ocur_Rock, Rock_Speed, Max_Speed, destroied_rock, count_miss
 
 
+    if random.randint(1, 60) == 1:
+        for i in range(Ocur_Rock):
+            speed = random.randint(Rock_Speed, Max_Speed)
+            rock = Rock(random.randint(30, SCREEN_WIDTH - 30), 0, speed)
+            rocks.add(rock)
+
+    for fire in fires:
+        rock = fire.colide(rocks)
+        if rock:
+            destroied_rock += 1
+            fire.kill()
+            rock.kill()
+
+    for rock in rocks:
+        if rock.Count_miss_rock():
+            rock.kill()
+            count_miss += 1
 
 
-def main():
-    pygame.init()
-    pygame.display.set_caption('Space_Guardian')
+def draw_text(screen, text, font, x, y, color):
+    text_obj = font.render(text, True, color)
+    text_rect = text_obj.get_rect()
+    text_rect.center = x, y
+    screen.blit(text_obj, text_rect)
+
+
+def handle_events():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_framework.quit()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                battleship.direction = "left"
+                battleship.state = 2
+            elif event.key == pygame.K_RIGHT:
+                battleship.direction = "right"
+                battleship.state = 1
+            elif event.key == pygame.K_UP:
+                battleship.direction = "up"
+                battleship.state = 3
+            elif event.key == pygame.K_DOWN:
+                battleship.direction = "down"
+                battleship.state = 4
+            elif event.key == pygame.K_SPACE:
+                fire = Fire(battleship.rect.centerx, battleship.rect.y, 10)
+                fires.add(fire)
+            elif event.key == pygame.K_ESCAPE:
+                game_framework.change_state(title_state)
+
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                battleship.direction = "stay"
+                battleship.state = 0
+            elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                battleship.direction = "stay"
+                battleship.state = 0
+
+    return False
+
+pygame.init()
+
+def enter():
+    global battleship, fires, rocks
+
+    battleship = BattleShip()
+    fires = pygame.sprite.Group()
+    rocks = pygame.sprite.Group()
+
+
+def exit():
+    global battleship, fires, rocks
+    del battleship
+    del fires
+    del rocks
+
+def update():
+    battleship.update()
+    fires.update()
+    rocks.update()
+    game_logic()
+
+def draw():
+    global destroied_rock, count_miss
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption('Space_Guardian')
+    background_image = pygame.image.load('background.png')
+    default_font = pygame.font.Font(None, 28)
     clock = pygame.time.Clock()
-    game = Game()
+    screen.blit(background_image, background_image.get_rect())
+    draw_text(screen, 'Destroyed Meteorite: {}'.format(destroied_rock),
+                   default_font, 110, 20, YELLOW)
+    draw_text(screen, 'Missed Meteorite: {}'.format(count_miss),
+                   default_font, 340, 20, RED)
 
-    done = False
-
-    while not done:
-
-        done = game.process_events()
-        if game.menu_on:
-            game.display_menu(screen)
-        else:
-            game.game_logic(screen)
-            game.display_frame(screen)
-
-        pygame.display.flip()
-        clock.tick(FPS)
-
-    pygame.quit()
+    rocks.draw(screen)
+    fires.draw(screen)
+    battleship.draw(screen)
+    pygame.display.flip()
+    clock.tick(FPS)
 
 
-if __name__ == '__main__':
-    main()
 
 
 
