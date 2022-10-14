@@ -5,6 +5,7 @@ import random
 from time import sleep
 import game_framework
 import title_state
+import Pause_state
 
 # 정의
 SCREEN_WIDTH = 480
@@ -222,6 +223,24 @@ def draw_text(screen, text, font, x, y, color):
     screen.blit(text_obj, text_rect)
 
 
+
+
+pygame.init()
+
+def enter():
+    global battleship, fires, rocks
+
+    battleship = BattleShip()
+    fires = pygame.sprite.Group()
+    rocks = pygame.sprite.Group()
+
+
+def exit():
+    global battleship, fires, rocks
+    del battleship
+    del fires
+    del rocks
+
 def handle_events():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -244,7 +263,7 @@ def handle_events():
                 fire = Fire(battleship.rect.centerx, battleship.rect.y, 10)
                 fires.add(fire)
             elif event.key == pygame.K_ESCAPE:
-                game_framework.change_state(title_state)
+                game_framework.push_state(Pause_state)
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
@@ -256,21 +275,6 @@ def handle_events():
 
     return False
 
-pygame.init()
-
-def enter():
-    global battleship, fires, rocks
-
-    battleship = BattleShip()
-    fires = pygame.sprite.Group()
-    rocks = pygame.sprite.Group()
-
-
-def exit():
-    global battleship, fires, rocks
-    del battleship
-    del fires
-    del rocks
 
 def update():
     battleship.update()
@@ -278,7 +282,8 @@ def update():
     rocks.update()
     game_logic()
 
-def draw():
+
+def draw_world():
     global destroied_rock, count_miss
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Space_Guardian')
@@ -287,15 +292,23 @@ def draw():
     clock = pygame.time.Clock()
     screen.blit(background_image, background_image.get_rect())
     draw_text(screen, 'Destroyed Meteorite: {}'.format(destroied_rock),
-                   default_font, 110, 20, YELLOW)
+              default_font, 110, 20, YELLOW)
     draw_text(screen, 'Missed Meteorite: {}'.format(count_miss),
-                   default_font, 340, 20, RED)
+              default_font, 340, 20, RED)
 
     rocks.draw(screen)
     fires.draw(screen)
     battleship.draw(screen)
-    pygame.display.flip()
     clock.tick(FPS)
+def draw():
+    draw_world()
+    pygame.display.flip()
+
+def pause():
+    pass
+
+def resume():
+    pass
 
 
 
